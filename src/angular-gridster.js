@@ -333,7 +333,7 @@ angular.module('gridster', [])
 				return;
 			}
 			while (item.col < newCol) {
-				++item.col;
+				++item.row;
 				this.moveOverlappingItems(item, ignoreItems);
 			}
 			this.putItem(item, item.row, item.col, ignoreItems);
