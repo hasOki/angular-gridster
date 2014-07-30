@@ -7,7 +7,8 @@ angular.module('app')
 			columns: 4,
 			draggable: {
 				handle: 'h3'
-			}
+			},
+			horizontalInsert: true
 		};
 
 		$scope.dashboards = {
@@ -55,7 +56,9 @@ angular.module('app')
 			$scope.dashboard.widgets.push({
 				name: "New Widget",
 				sizeX: 1,
-				sizeY: 1
+				sizeY: 1,
+				col: 0,
+				row: 0
 			});
 		};
 

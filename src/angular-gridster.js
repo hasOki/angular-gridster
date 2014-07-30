@@ -24,7 +24,8 @@ angular.module('gridster', [])
 	},
 	draggable: { // options to pass to jquery ui draggable
 		enabled: true
-	}
+	},
+	horizontalInsert: false
 })
 
 .controller('GridsterCtrl', ['gridsterConfig',
@@ -165,7 +166,11 @@ angular.module('gridster', [])
 					break;
 				}
 			}
-			this.floatItemsUp();
+			if (this.horizontalInsert) {
+				this.floatItemsLeft();
+			} else {
+				this.floatItemsUp();
+			}
 			this.updateHeight();
 		};
 
@@ -282,7 +287,56 @@ angular.module('gridster', [])
 				item.sizeY,
 				ignoreItems
 			);
-			this.moveItemsDown(overlappingItems, item.row + item.sizeY, ignoreItems);
+			if (this.horizontalInsert) {
+				this.moveItemsRight(overlappingItems, item.col + item.sizeX, ignoreItems);
+			} else {
+				this.moveItemsDown(overlappingItems, item.row + item.sizeY, ignoreItems);
+			}
+		};
+
+		/**
+		 * Moves an array of items to the specified column
+		 *
+		 * @param items
+		 * @param ignoreItems
+		 * @param newCol
+		 */
+		this.moveItemsRight = function(items, newCol, ignoreItems) {
+			if (!items || items.length === 0) {
+				return;
+			}
+			items.sort(function(a, b) {
+				return a.row - b.row;
+			});
+			ignoreItems = ignoreItems ? ignoreItems.slice(0) : [];
+			var leftCols = {},
+				item, i, l;
+			// calculate the left column in each row
+			for (i = 0, l = items.length; i < l; ++i) {
+				item = items[i];
+				var leftCol = leftCols[item.row];
+				if (typeof leftCol === 'undefined' || item.col < leftCol) {
+					leftCols[item.row] = item.col;
+				}
+			}
+			// move each item right from the left column in its row to the next column
+			for (i = 0, l = items.length; i < l; ++i) {
+				item = items[i];
+				var colsToMove = newCol - leftCols[item.row];
+				this.moveItemRight(item, item.col + colsToMove, ignoreItems);
+				ignoreItems.push(item);
+			}
+		};
+
+		this.moveItemRight = function(item, newCol, ignoreItems) {
+			if (item.col >= newCol) {
+				return;
+			}
+			while (item.col < newCol) {
+				++item.col;
+				this.moveOverlappingItems(item, ignoreItems);
+			}
+			this.putItem(item, item.row, item.col, ignoreItems);
 		};
 
 		/**
@@ -328,6 +382,64 @@ angular.module('gridster', [])
 				this.moveOverlappingItems(item, ignoreItems);
 			}
 			this.putItem(item, item.row, item.col, ignoreItems);
+		};
+
+		/**
+		 *  Moves all items to the left as much as possible
+		 */
+		this.floatItemsLeft = function() {
+			if (this.floating === false) {
+				return;
+			}
+			for (var rowIndex = 0, l = this.grid.length; rowIndex < l; ++rowIndex) {
+				var columns = this.grid[rowIndex];
+				if (!columns) {
+					continue;
+				}
+				for (var colIndex = 0, len = columns.length; colIndex < len; ++colIndex) {
+					if (columns[colIndex]) {
+						this.floatItemLeft(columns[colIndex]);
+					}
+				}
+			}
+		};
+
+		/**
+		 * Float an item left to the most suitable column
+		 *
+		 * @param {object} item The item to move
+		 */
+		this.floatItemLeft = function(item) {
+			var colIndex = item.col - 1,
+				sizeY = item.sizeY,
+				sizeX = item.sizeX,
+				bestRow = null,
+				bestColumn = null,
+				rowIndex = item.row;
+
+			while (colIndex > -1) {
+				var items = this.getItems(rowIndex, colIndex, sizeX, sizeY, item);
+				if (items.length !== 0) {
+					break;
+				}
+				bestRow = rowIndex;
+				bestColumn = colIndex;
+				--colIndex;
+			}
+
+			if (bestColumn !== null) {
+				this.putItem(item, bestRow, bestColumn);
+			}
+
+			// check if item can be float up one row
+			if (bestRow - 1 > -1) {
+				var prevRowItem = this.getItem(bestRow - 1, this.columns, item);
+				if (prevRowItem === null) {
+					item.row = bestRow - 1;
+					item.col = this.columns - 1;
+					this.floatItemLeft(item);
+				}
+			}
 		};
 
 		/**
@@ -594,7 +706,11 @@ angular.module('gridster', [])
 					// allow a little time to place items before floating up
 					$timeout(function() {
 						scope.$watch('gridster.floating', function() {
-							gridster.floatItemsUp();
+							if (gridster.horizontalInsert) {
+								gridster.floatItemsLeft();
+							} else {
+								gridster.floatItemsUp();
+							}
 						});
 						gridster.loaded = true;
 					}, 100);
@@ -649,7 +765,11 @@ angular.module('gridster', [])
 	this.setPosition = function(row, column) {
 		this.gridster.putItem(this, row, column);
 		if (this.gridster.loaded) {
-			this.gridster.floatItemsUp();
+			if (this.gridster.horizontalInsert) {
+				this.gridster.floatItemsLeft();
+			} else {
+				this.gridster.floatItemsUp();
+			}
 		}
 
 		this.gridster.updateHeight(this.isMoving() ? this.sizeY : 0);
@@ -686,7 +806,11 @@ angular.module('gridster', [])
 			this.gridster.moveOverlappingItems(this);
 
 			if (this.gridster.loaded) {
-				this.gridster.floatItemsUp();
+				if (this.gridster.horizontalInsert) {
+					this.gridster.floatItemsLeft();
+				} else {
+					this.gridster.floatItemsUp();
+				}
 			}
 
 			this.gridster.updateHeight(this.isMoving() ? this.sizeY : 0);
