@@ -332,6 +332,11 @@ angular.module('gridster', [])
 			if (item.col >= newCol) {
 				return;
 			}
+			if (newCol >= this.columns) {
+				++item.row;
+				item.col = 0;
+				newCol = newCol - this.columns;
+			}
 			while (item.col < newCol) {
 				++item.col;
 				this.moveOverlappingItems(item, ignoreItems);
