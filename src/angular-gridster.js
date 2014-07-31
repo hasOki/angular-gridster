@@ -415,7 +415,7 @@ angular.module('gridster', [])
 		 * @param {object} item The item to move
 		 */
 		this.floatItemLeft = function(item) {
-			var colIndex = item.col - 1,
+			var colIndex = item.col,
 				sizeY = item.sizeY,
 				sizeX = item.sizeX,
 				bestRow = null,
@@ -429,21 +429,17 @@ angular.module('gridster', [])
 				}
 				bestRow = rowIndex;
 				bestColumn = colIndex;
+
+				// check if item can be moved up
+				if (colIndex - 1 === -1 && rowIndex > -1) {
+					--rowIndex;
+					colIndex = this.columns;
+				}
 				--colIndex;
 			}
 
 			if (bestColumn !== null) {
 				this.putItem(item, bestRow, bestColumn);
-			}
-
-			// check if item can be float up one row
-			if (bestRow - 1 > -1) {
-				var prevRowItem = this.getItem(bestRow - 1, this.columns, item);
-				if (prevRowItem === null) {
-					item.row = bestRow - 1;
-					item.col = this.columns - 1;
-					this.floatItemLeft(item);
-				}
 			}
 		};
 
