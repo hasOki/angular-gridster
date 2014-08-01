@@ -323,7 +323,7 @@ angular.module('gridster', [])
 			for (i = 0, l = items.length; i < l; ++i) {
 				item = items[i];
 				var colsToMove = newCol - leftCols[item.row];
-				this.moveItemRight(item, item.col + colsToMove, ignoreItems);
+				this.moveItemRight(item, item.col + colsToMove);
 				ignoreItems.push(item);
 			}
 		};

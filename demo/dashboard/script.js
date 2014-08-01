@@ -18,15 +18,27 @@ angular.module('app')
 				widgets: [{
 					col: 0,
 					row: 0,
-					sizeY: 1,
+					sizeY: 2,
 					sizeX: 1,
 					name: "Widget 1"
+				}, {
+					col: 1,
+					row: 0,
+					sizeY: 2,
+					sizeX: 1,
+					name: "Widget 2"
 				}, {
 					col: 2,
 					row: 1,
 					sizeY: 1,
 					sizeX: 1,
-					name: "Widget 2"
+					name: "Widget 3"
+				}, {
+					col: 0,
+					row: 2,
+					sizeY: 1,
+					sizeX: 1,
+					name: "Widget 4"
 				}]
 			},
 			'2': {
@@ -35,7 +47,7 @@ angular.module('app')
 				widgets: [{
 					col: 1,
 					row: 1,
-					sizeY: 1,
+					sizeY: 2,
 					sizeX: 2,
 					name: "Other Widget 1"
 				}, {
